@@ -20,15 +20,28 @@ def inbound_sms():
     if str_array[0] == "Hello":
         response.message("Hello back to you!")
     elif str_array[0] == "run":
-        # have a list of parameters
+        # add --name --entrypoint -p?
         if "-d" in str_array:
             idx = len(str_array) - 1
-            response.message(str(client.containers.run(str_array[idx], detach=True)))
+            if "--name" in str_array:
+                name_idx = str_array.index("--name") + 1
+                response.message(str(client.containers.run(str_array[idx], detach=True, name=str_array[name_idx])))
+            else:
+                response.message(str(client.containers.run(str_array[idx], detach=True)))                
         else:
+            if "--name" in str_array:
+                name_idx = str_array.index("--name")
+                name_str = str_array[name_idx + 1]
+                del str_array[name_idx: name_idx + 2]
+                flag = 1
             command_str = str_array[:]
             del command_str[0:2]
             command = " ".join(command_str)
-            response.message(str(client.containers.run(str_array[1], command)))
+
+            if flag == 1:
+                response.message(str(client.containers.run(str_array[1], command, name=name_str)))
+            else:
+                response.message(str(client.containers.run(str_array[1], command)))
     elif str_array[0] == "ps":
         if len(str_array) > 1:
             if str_array[1] == "-a":
@@ -45,7 +58,13 @@ def inbound_sms():
             response.message(str(client.containers.list()))
     elif str_array[0] == "create":
         try:
-            response.message(str(client.containers.create(str_array[1])))
+            if len(str_array) == 1:
+                response.message(str(client.containers.create(str_array[1])))
+            else:
+                command_str = str_array[:]
+                del command_str[0:2]
+                command = " ".join(command_str)
+                response.message(str(client.containers.create(str_array[1], command)))
         except:
             response.message("Container not found")
     elif str_array[0] == "rm":
