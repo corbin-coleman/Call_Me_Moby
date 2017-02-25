@@ -11,21 +11,31 @@ def check_app():
 
 @app.route("/twilio", methods=["POST"])
 def inbound_sms():
+    # Retrieve response from twilio
     response = twiml.Response()
 
+    # Gets the inbound message for SMS messags only
     inbound_message = request.form.get("Body")
+
+    # Parses the inbound messages to only contain command and arguements
     str_array = parse_message(inbound_message)
+
+    # Starts the Docker Client
     client = docker.from_env()
 
+    # Conditions of inbound messages
     if str_array[0] == "Hello":
         response.message("Hello back to you!")
     elif str_array[0] == "run":
-        # add --name --entrypoint -p?
+        # Run command, checks for detach mode, and name flag
         if "-d" in str_array:
             idx = len(str_array) - 1
             if "--name" in str_array:
                 name_idx = str_array.index("--name") + 1
-                response.message(str(client.containers.run(str_array[idx], detach=True, name=str_array[name_idx])))
+                try:
+                    response.message(str(client.containers.run(str_array[idx], detach=True, name=str_array[name_idx])))
+                except: 
+                    response.message("Name is already being used")
             else:
                 response.message(str(client.containers.run(str_array[idx], detach=True)))                
         else:
@@ -39,10 +49,14 @@ def inbound_sms():
             command = " ".join(command_str)
 
             if flag == 1:
-                response.message(str(client.containers.run(str_array[1], command, name=name_str)))
+                try:
+                    response.message(str(client.containers.run(str_array[1], command, name=name_str)))
+                except:
+                    response.message("Name is already being used")
             else:
                 response.message(str(client.containers.run(str_array[1], command)))
     elif str_array[0] == "ps":
+        # PS command to list all containers, -a to list all stopped, -l to lastest container, -n to number
         if len(str_array) > 1:
             if str_array[1] == "-a":
                 msg = client.containers.list(all=True)
@@ -57,6 +71,7 @@ def inbound_sms():
         else:
             response.message(str(client.containers.list()))
     elif str_array[0] == "create":
+        # create the container but do not run it
         try:
             if len(str_array) == 1:
                 response.message(str(client.containers.create(str_array[1])))
@@ -68,12 +83,14 @@ def inbound_sms():
         except:
             response.message("Container not found")
     elif str_array[0] == "rm":
+        # rm a container given ID or Name
         response.message("stopping...")
         container = client.containers.get(str(str_array[1]))
         container.logs()
         container.stop()
         response.message("has stopped")
     elif str_array[0] == "prune":
+        # Does not work yet but should clear all stopped containers
         client.containers.prune()
         response.message("Destroyed all stopped containers")
     else:
