@@ -39,16 +39,16 @@ def inbound_sms():
             else:
                 response.message(str(client.containers.run(str_array[idx], detach=True)))                
         else:
+            name_idx = ""
             if "--name" in str_array:
                 name_idx = str_array.index("--name")
                 name_str = str_array[name_idx + 1]
                 del str_array[name_idx: name_idx + 2]
-                flag = 1
             command_str = str_array[:]
             del command_str[0:2]
             command = " ".join(command_str)
 
-            if flag == 1:
+            if name_idx != "":
                 try:
                     response.message(str(client.containers.run(str_array[1], command, name=name_str)))
                 except:
@@ -84,11 +84,22 @@ def inbound_sms():
             response.message("Container not found")
     elif str_array[0] == "rm":
         # rm a container given ID or Name
+        response.message("removing...")
+        container = client.containers.get(str(str_array[1]))
+        try:
+            container.remove()
+            response.message("deleted!")
+        except:
+            response.message("please stop your container before removing")
+    elif str_array[0] == "stop":
+        # stop a container given ID or Name
         response.message("stopping...")
         container = client.containers.get(str(str_array[1]))
-        container.logs()
-        container.stop()
-        response.message("has stopped")
+        try:
+            container.stop()
+            response.message("has stopped")
+        except:
+            response.message("has stopped")
     elif str_array[0] == "prune":
         # Does not work yet but should clear all stopped containers
         client.containers.prune()
