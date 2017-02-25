@@ -20,17 +20,34 @@ def inbound_sms():
     if str_array[0] == "Hello":
         response.message("Hello back to you!")
     elif str_array[0] == "run":
-        response.message(str(client.containers.run(str_array[1], detach=True)))
+        # have a list of parameters
+        if "-d" in str_array:
+            idx = len(str_array) - 1
+            response.message(str(client.containers.run(str_array[idx], detach=True)))
+        else:
+            command_str = str_array[:]
+            del command_str[0:2]
+            command = " ".join(command_str)
+            response.message(str(client.containers.run(str_array[1], command)))
     elif str_array[0] == "ps":
         if len(str_array) > 1:
-            msg = client.containers.list(all=True)
-            print(msg)
-            response.message(str(msg) + "Hello")
-            response.message("HELLO")
+            if str_array[1] == "-a":
+                msg = client.containers.list(all=True)
+            elif str_array[1] == "-l":
+                msg = client.containers.list(limit=1)
+            elif "-n" in str_array[1]:
+                number = str_array[1].split('=')
+                msg = client.containers.list(limit=int(number[1]))
+            else:
+                msg = "Flag is not available"
+            response.message(str(msg))
         else:
             response.message(str(client.containers.list()))
     elif str_array[0] == "create":
-        response.message(str(client.containers.create(str_array[1])))
+        try:
+            response.message(str(client.containers.create(str_array[1])))
+        except:
+            response.message("Container not found")
     elif str_array[0] == "rm":
         response.message("stopping...")
         container = client.containers.get(str(str_array[1]))
