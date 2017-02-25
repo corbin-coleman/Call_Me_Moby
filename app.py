@@ -25,7 +25,7 @@ def inbound_sms():
 
     # Conditions of inbound messages
     if str_array[0] == "Hello":
-        response.message("Hello back to you!")
+        response.message("To you hello back!  Yes, hmmm.")
     elif str_array[0] == "run":
         # Run command, checks for detach mode, and name flag
         if "-d" in str_array:
@@ -35,7 +35,7 @@ def inbound_sms():
                 try:
                     response.message(str(client.containers.run(str_array[idx], detach=True, name=str_array[name_idx])))
                 except: 
-                    response.message("Name is already being used")
+                    response.message("Already being used, name is.  Herh herh herh.")
             else:
                 response.message(str(client.containers.run(str_array[idx], detach=True)))                
         else:
@@ -52,7 +52,7 @@ def inbound_sms():
                 try:
                     response.message(str(client.containers.run(str_array[1], command, name=name_str)))
                 except:
-                    response.message("Name is already being used")
+                    response.message("Already being used, name is.  Herh herh herh.")
             else:
                 response.message(str(client.containers.run(str_array[1], command)))
     elif str_array[0] == "ps":
@@ -66,7 +66,7 @@ def inbound_sms():
                 number = str_array[1].split('=')
                 msg = client.containers.list(limit=int(number[1]))
             else:
-                msg = "Flag is not available"
+                msg = "Available this flag is not.  Yeesssssss."
             response.message(str(msg))
         else:
             response.message(str(client.containers.list()))
@@ -81,31 +81,31 @@ def inbound_sms():
                 command = " ".join(command_str)
                 response.message(str(client.containers.create(str_array[1], command)))
         except:
-            response.message("Container not found")
+            response.message("Found the container is not.  Yes, hmmm.")
     elif str_array[0] == "rm":
         # rm a container given ID or Name
-        response.message("removing...")
+        response.message("Removing the container...  Yes, hmmm.")
         container = client.containers.get(str(str_array[1]))
         try:
             container.remove()
-            response.message("deleted!")
+            response.message("Th' container has be sent to Davy Jones' locker")
         except:
-            response.message("please stop your container before removing")
+            response.message("Please stop ye container before removin'")
     elif str_array[0] == "stop":
         # stop a container given ID or Name
         response.message("stopping...")
         container = client.containers.get(str(str_array[1]))
         try:
             container.stop()
-            response.message("has stopped")
+            response.message("Th' container has been sent to the brig")
         except:
-            response.message("has stopped")
+            response.message("Th' container has been sent to the brig")
     elif str_array[0] == "prune":
         # Does not work yet but should clear all stopped containers
         client.containers.prune()
         response.message("Destroyed all stopped containers")
     else:
-        response.message("Not quite sure what you meant, but okay.")
+        response.message("'tis be not a command. Walk th' plank")
 
     return Response(str(response), mimetype="application/xml"), 200
 
