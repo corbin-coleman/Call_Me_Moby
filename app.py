@@ -25,7 +25,8 @@ def inbound_sms():
 
     # Conditions of inbound messages
     if str_array[0] == "Hello":
-        response.message("To you hello back!  Yes, hmmm.")
+        response.message("Welcome to Call Me Moby - A SMS Docker Container Management Service")
+        response.message("Run, List, Stop, and Remove Containers by texting docker commands")
     elif str_array[0] == "run":
         # Run command, checks for detach mode, and name flag
         if "-d" in str_array:
@@ -104,6 +105,8 @@ def inbound_sms():
         # Does not work yet but should clear all stopped containers
         client.containers.prune()
         response.message("Destroyed all stopped containers")
+    elif inbound_message == "docker help":
+        response.message("To run a container: run (flags) (image); To rm a container: rm (container); To stop: stop (container); To list containers: ps (flags)")
     else:
         response.message("'tis be not a command. Walk th' plank")
 
@@ -114,6 +117,7 @@ def parse_message(message):
     str_array = message.split(' ')
     if str_array[0] == "docker":
         del str_array[0]
+    str_array[0].lower()
     return str_array
     
     
